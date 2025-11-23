@@ -19,13 +19,13 @@ public class InputState
     /// <summary>
     ///     Cursor move speed in pixels per second
     /// </summary>
-    private const float cursorMoveSpeed = 250.0f;
+    private const float CursorMoveSpeed = 250.0f;
 
     // Current Input states - Tracks the latest state of all input devices
     public readonly GamePadState[] CurrentGamePadStates;
     public readonly KeyboardState[] CurrentKeyboardStates;
 
-    public readonly List<GestureSample> Gestures = new(); // Stores touch gestures
+    public readonly List<GestureSample> Gestures = []; // Stores touch gestures
 
     // Last Input states - Stores the previous frame's input states for detecting changes
     public readonly GamePadState[] LastGamePadStates;
@@ -93,6 +93,7 @@ public class InputState
     /// </summary>
     /// <param name="gameTime">Provides a snapshot of timing values.</param>
     /// <param name="baseScreenSize">The base screen size to constrain cursor movement within.</param>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
     public void Update(GameTime gameTime, Vector2 baseScreenSize)
     {
         // Update keyboard and gamepad states for all players
@@ -130,7 +131,10 @@ public class InputState
                     break;
                 case TouchLocationState.Moved:
                 case TouchLocationState.Released:
+                case TouchLocationState.Invalid:
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
         // Handle mouse clicks as touch equivalents
@@ -183,29 +187,29 @@ public class InputState
         {
             LastCursorLocation = currentCursorLocation;
 
-            currentCursorLocation.X += CurrentGamePadStates[0].ThumbSticks.Left.X * elapsedTime * cursorMoveSpeed;
-            currentCursorLocation.Y -= CurrentGamePadStates[0].ThumbSticks.Left.Y * elapsedTime * cursorMoveSpeed;
+            currentCursorLocation.X += CurrentGamePadStates[0].ThumbSticks.Left.X * elapsedTime * CursorMoveSpeed;
+            currentCursorLocation.Y -= CurrentGamePadStates[0].ThumbSticks.Left.Y * elapsedTime * CursorMoveSpeed;
         }
 
         // Move cursor with keyboard arrow keys
         if (CurrentKeyboardStates[0].IsKeyDown(Keys.Up))
         {
-            currentCursorLocation.Y -= elapsedTime * cursorMoveSpeed;
+            currentCursorLocation.Y -= elapsedTime * CursorMoveSpeed;
         }
 
         if (CurrentKeyboardStates[0].IsKeyDown(Keys.Down))
         {
-            currentCursorLocation.Y += elapsedTime * cursorMoveSpeed;
+            currentCursorLocation.Y += elapsedTime * CursorMoveSpeed;
         }
 
         if (CurrentKeyboardStates[0].IsKeyDown(Keys.Left))
         {
-            currentCursorLocation.X -= elapsedTime * cursorMoveSpeed;
+            currentCursorLocation.X -= elapsedTime * CursorMoveSpeed;
         }
 
         if (CurrentKeyboardStates[0].IsKeyDown(Keys.Right))
         {
-            currentCursorLocation.X += elapsedTime * cursorMoveSpeed;
+            currentCursorLocation.X += elapsedTime * CursorMoveSpeed;
         }
 
         // Keep cursor within rendered screen bounds
@@ -297,7 +301,6 @@ public class InputState
                IsNewButtonPress(button, PlayerIndex.Four, out playerIndex);
     }
 
-
     /// <summary>
     ///     Checks for a "menu select" input action.
     /// </summary>
@@ -336,11 +339,9 @@ public class InputState
     /// <returns>True if menu up action occurred, false otherwise.</returns>
     public bool IsMenuUp(PlayerIndex? controllingPlayer)
     {
-        PlayerIndex playerIndex;
-
-        return IsNewKeyPress(Keys.Up, controllingPlayer, out playerIndex) ||
-               IsNewButtonPress(Buttons.DPadUp, controllingPlayer, out playerIndex) ||
-               IsNewButtonPress(Buttons.LeftThumbstickUp, controllingPlayer, out playerIndex) ||
+        return IsNewKeyPress(Keys.Up, controllingPlayer, out _) ||
+               IsNewButtonPress(Buttons.DPadUp, controllingPlayer, out _) ||
+               IsNewButtonPress(Buttons.LeftThumbstickUp, controllingPlayer, out _) ||
                IsMouseWheelScrolledUp;
     }
 
@@ -352,11 +353,9 @@ public class InputState
     /// <returns>True if menu down action occurred, false otherwise.</returns>
     public bool IsMenuDown(PlayerIndex? controllingPlayer)
     {
-        PlayerIndex playerIndex;
-
-        return IsNewKeyPress(Keys.Down, controllingPlayer, out playerIndex) ||
-               IsNewButtonPress(Buttons.DPadDown, controllingPlayer, out playerIndex) ||
-               IsNewButtonPress(Buttons.LeftThumbstickDown, controllingPlayer, out playerIndex) ||
+        return IsNewKeyPress(Keys.Down, controllingPlayer, out _) ||
+               IsNewButtonPress(Buttons.DPadDown, controllingPlayer, out _) ||
+               IsNewButtonPress(Buttons.LeftThumbstickDown, controllingPlayer, out _) ||
                IsMouseWheelScrolledDown;
     }
 
@@ -369,8 +368,6 @@ public class InputState
     /// <returns>True if pause action occurred, false otherwise.</returns>
     public bool IsPauseGame(PlayerIndex? controllingPlayer, Rectangle? rectangle = null)
     {
-        PlayerIndex playerIndex;
-
         var pointInRect = false;
 
         // Check if the cursor is in the provided rectangle and was clicked
@@ -383,9 +380,9 @@ public class InputState
             }
         }
 
-        return IsNewKeyPress(Keys.Escape, controllingPlayer, out playerIndex)
-               || IsNewButtonPress(Buttons.Back, controllingPlayer, out playerIndex)
-               || IsNewButtonPress(Buttons.Start, controllingPlayer, out playerIndex)
+        return IsNewKeyPress(Keys.Escape, controllingPlayer, out _)
+               || IsNewButtonPress(Buttons.Back, controllingPlayer, out _)
+               || IsNewButtonPress(Buttons.Start, controllingPlayer, out _)
                || pointInRect;
     }
 
@@ -396,10 +393,8 @@ public class InputState
     /// <returns>True if select next action occurred, false otherwise.</returns>
     public bool IsSelectNext(PlayerIndex? controllingPlayer)
     {
-        PlayerIndex playerIndex;
-
-        return IsNewKeyPress(Keys.Right, controllingPlayer, out playerIndex) ||
-               IsNewButtonPress(Buttons.DPadRight, controllingPlayer, out playerIndex);
+        return IsNewKeyPress(Keys.Right, controllingPlayer, out _) ||
+               IsNewButtonPress(Buttons.DPadRight, controllingPlayer, out _);
     }
 
     /// <summary>
@@ -409,10 +404,8 @@ public class InputState
     /// <returns>True if select previous action occurred, false otherwise.</returns>
     public bool IsSelectPrevious(PlayerIndex? controllingPlayer)
     {
-        PlayerIndex playerIndex;
-
-        return IsNewKeyPress(Keys.Left, controllingPlayer, out playerIndex) ||
-               IsNewButtonPress(Buttons.DPadLeft, controllingPlayer, out playerIndex);
+        return IsNewKeyPress(Keys.Left, controllingPlayer, out _) ||
+               IsNewButtonPress(Buttons.DPadLeft, controllingPlayer, out _);
     }
 
     /// <summary>
@@ -440,16 +433,8 @@ public class InputState
     /// </summary>
     /// <param name="rectangle">The rectangle bounds of the UI element to check.</param>
     /// <returns>True if the UI element was clicked, false otherwise.</returns>
-    internal bool IsUIClicked(Rectangle rectangle)
+    internal bool IsUiClicked(Rectangle rectangle)
     {
-        var pointInRect = false;
-
-        if (rectangle.Contains(CurrentCursorLocation)
-            && (IsLeftMouseButtonClicked() || touchCount > 0))
-        {
-            pointInRect = true;
-        }
-
-        return pointInRect;
+        return rectangle.Contains(CurrentCursorLocation) && (IsLeftMouseButtonClicked() || touchCount > 0);
     }
 }

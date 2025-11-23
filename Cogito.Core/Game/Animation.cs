@@ -44,16 +44,12 @@ internal class Animation
     /// <summary>
     ///     Gets the number of frames in the animation.
     /// </summary>
-    public int FrameCount =>
-        // Assume square frames.
-        Texture.Width / FrameHeight;
+    public int FrameCount => Texture.Width / FrameHeight; // Assume square frames.
 
     /// <summary>
     ///     Gets the width of a frame in the animation.
     /// </summary>
-    public int FrameWidth =>
-        // Assume square frames.
-        Texture.Height;
+    public int FrameWidth => Texture.Height; // Assume square frames.
 
     /// <summary>
     ///     Gets the height of a frame in the animation.

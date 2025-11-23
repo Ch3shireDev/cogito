@@ -6,7 +6,7 @@ namespace Cogito.Core.Effects;
 /// <summary>
 ///     The data for a single particle in this game's particle systems.
 /// </summary>
-public class Particle
+internal class Particle
 {
     /// <summary>
     ///     The current colour of the particle.
@@ -89,7 +89,7 @@ public class Particle
 
     /// <summary>
     ///     Triggered when the particle "dies"
-    ///     Be careful or circular referencing emitters or you'll have endless particles.
+    ///     Be careful or circular referencing emitters, or you'll have endless particles.
     /// </summary>
     public event Action<Vector2> OnDeath;
 

@@ -11,8 +11,7 @@ internal class PauseScreen : MenuScreen
     /// <summary>
     ///     Initializes a new instance of the <see cref="PauseScreen" /> class.
     /// </summary>
-    public PauseScreen()
-        : base(Resources.Paused)
+    public PauseScreen() : base(Resources.Paused)
     {
         // Create our menu entries.
         var resumeGameMenuEntry = new MenuEntry(Resources.Resume);

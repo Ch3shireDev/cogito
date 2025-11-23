@@ -24,7 +24,7 @@ internal class GameplayScreen : GameScreen
     /// <summary>
     ///     Spacing in pixels between text elements and screen edges.
     /// </summary>
-    private const int textEdgeSpacing = 10;
+    private const int TextEdgeSpacing = 10;
 
     /// <summary>
     ///     Content manager for loading and managing game assets.
@@ -363,11 +363,23 @@ internal class GameplayScreen : GameScreen
         base.Draw(gameTime);
 
         // If the game is transitioning on or off, fade it out to black.
-        if (TransitionPosition > 0 || pauseAlpha > 0)
+        if (!(TransitionPosition > 0) && !(pauseAlpha > 0))
         {
-            var alpha = MathHelper.Lerp(1f - TransitionAlpha, 1f, pauseAlpha / 2);
-
-            ScreenManager.FadeBackBufferToBlack(alpha);
+            return;
         }
+
+        var alpha = MathHelper.Lerp(1f - TransitionAlpha, 1f, pauseAlpha / 2);
+
+        ScreenManager.FadeBackBufferToBlack(alpha);
     }
+}
+
+/// <summary>
+///     The various stage of the pop-up message after completing a level
+/// </summary>
+internal enum EndOfLevelMessageState
+{
+    NotShowing,
+    Show,
+    Showing
 }

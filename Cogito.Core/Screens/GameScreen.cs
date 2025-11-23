@@ -174,16 +174,9 @@ public abstract class GameScreen
         else
         {
             // If no other screen is covering, start the transition on.
-            if (UpdateTransition(gameTime, TransitionOnTime, -1))
-            {
-                // Still transitioning on.
-                ScreenState = ScreenState.TransitionOn;
-            }
-            else
-            {
-                // Transition on complete, activate the screen.
-                ScreenState = ScreenState.Active;
-            }
+            // Still transitioning on.
+            // Transition on complete, activate the screen.
+            ScreenState = UpdateTransition(gameTime, TransitionOnTime, -1) ? ScreenState.TransitionOn : ScreenState.Active;
         }
 
         // Check if the back buffer size has changed (e.g., window resize).
@@ -264,4 +257,15 @@ public abstract class GameScreen
             IsExiting = true;
         }
     }
+}
+
+/// <summary>
+///     Enum describes the screen transition state.
+/// </summary>
+public enum ScreenState
+{
+    TransitionOn,
+    Active,
+    TransitionOff,
+    Hidden
 }

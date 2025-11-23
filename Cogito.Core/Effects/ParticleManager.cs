@@ -9,12 +9,12 @@ public class ParticleManager
 {
     /// <summary>
     ///     Controls the "density" of the tail
-    ///     Dense Tail (t += 1f): A continuous, almost solid-looking trail.Ideal for effects like glowing streaks.
-    ///     Sparse Tail (t += 10f): A dotted, fragmented appearance.Useful for effects like spark trails or light debris.
+    ///     Dense Tail (t += 1f): A continuous, almost solid-looking trail. Ideal for effects like glowing streaks.
+    ///     Sparse Tail (t += 10f): A dotted, fragmented appearance. Useful for effects like spark trails or light debris.
     /// </summary>
-    private const float tailDensity = 5f;
+    private const float TailDensity = 5f;
 
-    private readonly List<Particle> particles;
+    private readonly List<Particle> particles = [];
     private readonly Random random;
 
     private readonly Vector2 textureOrigin;
@@ -28,7 +28,6 @@ public class ParticleManager
     /// <param name="position"></param>
     public ParticleManager(Texture2D texture, Vector2 position)
     {
-        particles = new List<Particle>();
         random = new Random();
         Texture = texture;
         textureOrigin = new Vector2(texture.Width / 2, texture.Height / 2);
@@ -36,7 +35,7 @@ public class ParticleManager
     }
 
     /// <summary>
-    ///     Position where these particles eminate from
+    ///     Position where these particles emanate from
     /// </summary>
     public Vector2 Position { get; set; }
 
@@ -245,7 +244,7 @@ public class ParticleManager
     }
 
     /// <summary>
-    ///     Event fireed when the Fireworks particle dies
+    ///     Event fired when the Fireworks particle dies
     /// </summary>
     /// <param name="particlePosition"></param>
     private void FireworkParticle_OnDeath(Vector2 particlePosition)
@@ -303,7 +302,7 @@ public class ParticleManager
                     0f); // Draw layer depth
 
                 // Draw the particle's tail in segments to simulate a fading trail
-                for (float t = 0; t < tailLength; t += tailDensity)
+                for (float t = 0; t < tailLength; t += TailDensity)
                 {
                     // Calculate the position of the tail segment
                     var tailPosition = particle.Position - tailDirection * t;

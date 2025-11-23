@@ -282,7 +282,7 @@ internal class MainMenuScreen : MenuScreen
     private void PlayMenuEntrySelected(object sender, PlayerIndexEventArgs e)
     {
         var toastMessageBox = new MessageBoxScreen(Resources.LetsGo, false, new TimeSpan(0, 0, 1), true);
-        toastMessageBox.Accepted += (sender, e) =>
+        toastMessageBox.Accepted += (_, e) =>
         {
             playerIndex = e.PlayerIndex;
             readyToPlay = true;

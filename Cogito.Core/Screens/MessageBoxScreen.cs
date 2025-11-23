@@ -30,8 +30,7 @@ internal class MessageBoxScreen : GameScreen
     ///     Initializes a new instance of the <see cref="MessageBoxScreen" /> class, automatically including usage text.
     /// </summary>
     /// <param name="message">The message to display.</param>
-    public MessageBoxScreen(string message)
-        : this(message, true, TimeSpan.Zero)
+    public MessageBoxScreen(string message) : this(message, true, TimeSpan.Zero)
     {
     }
 
@@ -100,16 +99,14 @@ internal class MessageBoxScreen : GameScreen
             return;
         }
 
-        PlayerIndex playerIndex;
-
         // We pass in our ControllingPlayer, which may either be null (to
         // accept input from any player) or a specific index. If we pass a null
         // controlling player, the InputState helper returns to us which player
         // actually provided the input. We pass that through to our Accepted and
         // Cancelled events, so they can tell which player triggered them.
-        if (inputState.IsMenuSelect(ControllingPlayer, out playerIndex)
+        if (inputState.IsMenuSelect(ControllingPlayer, out var playerIndex)
             || (CogitoGame.IsMobile
-                && inputState.IsUIClicked(new Rectangle((int)yesButtonPosition.X, (int)yesButtonPosition.Y, (int)yesTextSize.X, (int)yesTextSize.Y))))
+                && inputState.IsUiClicked(new Rectangle((int)yesButtonPosition.X, (int)yesButtonPosition.Y, (int)yesTextSize.X, (int)yesTextSize.Y))))
         {
             // Raise the accepted event, then exit the message box.
             Accepted?.Invoke(this, new PlayerIndexEventArgs(playerIndex));
@@ -118,7 +115,7 @@ internal class MessageBoxScreen : GameScreen
         }
         else if (inputState.IsMenuCancel(ControllingPlayer, out playerIndex)
                  || (CogitoGame.IsMobile
-                     && inputState.IsUIClicked(new Rectangle((int)noButtonPosition.X, (int)noButtonPosition.Y, (int)noTextSize.X, (int)noTextSize.Y))))
+                     && inputState.IsUiClicked(new Rectangle((int)noButtonPosition.X, (int)noButtonPosition.Y, (int)noTextSize.X, (int)noTextSize.Y))))
         {
             // Raise the cancelled event, then exit the message box.
             Cancelled?.Invoke(this, new PlayerIndexEventArgs(playerIndex));
@@ -191,25 +188,19 @@ internal class MessageBoxScreen : GameScreen
         // Darken down any other screens that were drawn beneath the popup.
         ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
 
-        // Fade the popup alpha during transitions.
-        var color = Color.White * TransitionAlpha;
-
         spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, ScreenManager.GlobalTransformation);
 
         // Draw the background rectangle.
-        spriteBatch.Draw(gradientTexture, backgroundRectangle, color);
+        spriteBatch.Draw(gradientTexture, backgroundRectangle, Color.White * TransitionAlpha);
 
         // Draw the message box text.
-        spriteBatch.DrawString(font, message, messageTextPosition, color);
+        spriteBatch.DrawString(font, message, messageTextPosition, Color.White * TransitionAlpha);
 
-        if (CogitoGame.IsMobile
-            && !toastMessage)
+        if (CogitoGame.IsMobile && !toastMessage)
         {
-            color = Color.LimeGreen;
-            spriteBatch.DrawString(font, Resources.YesButtonText, yesButtonPosition, color);
+            spriteBatch.DrawString(font, Resources.YesButtonText, yesButtonPosition, Color.LimeGreen);
 
-            color = Color.OrangeRed;
-            spriteBatch.DrawString(font, Resources.NoButtonText, noButtonPosition, color);
+            spriteBatch.DrawString(font, Resources.NoButtonText, noButtonPosition, Color.OrangeRed);
         }
 
         spriteBatch.End();

@@ -185,3 +185,13 @@ internal class Gem
         spriteBatch.Draw(texture, Position, null, Color, 0.0f, origin, Scale, SpriteEffects.None, 0.0f);
     }
 }
+
+/// <summary>
+///     The various states the gem could be in.
+/// </summary>
+internal enum GemState
+{
+    Collected,
+    Collecting,
+    Waiting
+}

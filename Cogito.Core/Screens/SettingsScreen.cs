@@ -15,8 +15,8 @@ namespace Cogito.Core.Screens;
 /// </summary>
 internal class SettingsScreen : MenuScreen
 {
-    private static List<CultureInfo> languages;
-    private static int currentLanguage;
+    private static readonly List<CultureInfo> Languages = LocalizationManager.GetSupportedCultures();
+    private static int _currentLanguage;
 
     private readonly MenuEntry backMenuEntry;
     private readonly MenuEntry fullscreenMenuEntry;
@@ -31,12 +31,8 @@ internal class SettingsScreen : MenuScreen
     /// <summary>
     ///     Initializes a new instance of the <see cref="SettingsScreen" /> class.
     /// </summary>
-    public SettingsScreen()
-        : base(Resources.Settings)
+    public SettingsScreen() : base(Resources.Settings)
     {
-        var cultures = LocalizationManager.GetSupportedCultures();
-        languages = cultures;
-
         // Create our menu entries.
         fullscreenMenuEntry = new MenuEntry(string.Empty);
         languageMenuEntry = new MenuEntry(string.Empty);
@@ -80,7 +76,7 @@ internal class SettingsScreen : MenuScreen
             settingsManager.Save();
         };
 
-        currentLanguage = settingsManager.Settings.Language;
+        _currentLanguage = settingsManager.Settings.Language;
         CurrentParticleEffect = settingsManager.Settings.ParticleEffect;
         gdm.IsFullScreen = settingsManager.Settings.FullScreen;
 
@@ -126,7 +122,7 @@ internal class SettingsScreen : MenuScreen
     {
         fullscreenMenuEntry.Text = string.Format(Resources.DisplayMode, gdm.IsFullScreen ? Resources.FullScreen : Resources.Windowed);
 
-        var selectedLanguage = languages[currentLanguage].DisplayName;
+        var selectedLanguage = Languages[_currentLanguage].DisplayName;
         if (selectedLanguage.Contains("Invariant"))
         {
             selectedLanguage = Resources.English;
@@ -160,12 +156,12 @@ internal class SettingsScreen : MenuScreen
     /// <param name="e">The <see cref="PlayerIndexEventArgs" /> instance containing the event data.</param>
     private void LanguageMenuEntrySelected(object sender, PlayerIndexEventArgs e)
     {
-        currentLanguage = (currentLanguage + 1) % languages.Count;
+        _currentLanguage = (_currentLanguage + 1) % Languages.Count;
 
-        var selectedLanguage = languages[currentLanguage].Name;
+        var selectedLanguage = Languages[_currentLanguage].Name;
         LocalizationManager.SetCulture(selectedLanguage);
 
-        settingsManager.Settings.Language = currentLanguage;
+        settingsManager.Settings.Language = _currentLanguage;
     }
 
     /// <summary>

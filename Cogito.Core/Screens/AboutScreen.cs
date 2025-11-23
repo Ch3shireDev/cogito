@@ -25,7 +25,7 @@ internal class AboutScreen : MenuScreen
     public AboutScreen()
         : base(Resources.About) // Assumes Resources.About contains the screen title
     {
-        // Create the static label entry. isabled as it's a label
+        // Create the static label entry. Disabled as it's a label
         builtWithMonoGameMenuEntry = new MenuEntry("#BuiltWithMonoGame", false);
 
         // Create the clickable link entry.

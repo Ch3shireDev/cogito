@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Cogito.Core.Effects;
 using Cogito.Core.Inputs;
 using Cogito.Core.Localization;
@@ -43,7 +44,7 @@ internal class Level : IDisposable
     // Backpack related variables
     private readonly Texture2D backpack;
 
-    private readonly List<Enemy> enemies = new();
+    private readonly List<Enemy> enemies = [];
 
     private readonly SoundEffect exitReachedSound;
 
@@ -260,7 +261,7 @@ internal class Level : IDisposable
     /// </param>
     private void LoadTiles(Stream fileStream)
     {
-        // Load the level and ensure all of the lines are the same length.
+        // Load the level and ensure all the lines are the same length.
         int width;
         var lines = new List<string>();
         using (var reader = new StreamReader(fileStream))
@@ -319,64 +320,33 @@ internal class Level : IDisposable
     /// <returns>The loaded tile.</returns>
     private Tile LoadTile(char tileType, int x, int y)
     {
-        switch (tileType)
+        return tileType switch
         {
             // Blank space
-            case '.':
-                return new Tile(null, TileCollision.Passable);
-
+            '.' => new Tile(null, TileCollision.Passable),
             // Exit
-            case 'X':
-                return LoadExitTile(x, y);
-
+            'X' => LoadExitTile(x, y),
             // Minimal value Gem
-            case '1':
-                return LoadGemTile(x, y, tileType);
             // Medium value Gem
-            case '2':
-                return LoadGemTile(x, y, tileType);
             // Maximum value Gem
-            case '3':
-                return LoadGemTile(x, y, tileType);
             // PowerUp Gem
-            case '4':
-                return LoadGemTile(x, y, tileType);
-
+            '1' or '2' or '3' or '4' => LoadGemTile(x, y, tileType),
             // Floating platform
-            case '-':
-                return LoadTile("Platform", TileCollision.Platform);
-
+            '-' => LoadTile("Platform", TileCollision.Platform),
             // Various enemy types
-            case 'A':
-            case 'B':
-            case 'C':
-            case 'D':
-                return LoadEnemyTile(x, y, tileType);
-
+            'A' or 'B' or 'C' or 'D' => LoadEnemyTile(x, y, tileType),
             // Platform block
-            case '~':
-                return LoadVarietyTile("BlockB", 2, TileCollision.Platform);
-
+            '~' => LoadVarietyTile("BlockB", 2, TileCollision.Platform),
             // Passable block
-            case ':':
-                return LoadVarietyTile("BlockB", 2, TileCollision.Passable);
-
+            ':' => LoadVarietyTile("BlockB", 2, TileCollision.Passable),
             // Impassable block
-            case '#':
-                return LoadVarietyTile("BlockA", 7, TileCollision.Impassable);
-
+            '#' => LoadVarietyTile("BlockA", 7, TileCollision.Impassable),
             // Breakable block
-            case ';':
-                return LoadVarietyTile("BlockB", 2, TileCollision.Breakable);
-
+            ';' => LoadVarietyTile("BlockB", 2, TileCollision.Breakable),
             // Player 1 start point
-            case 'P':
-                return LoadStartTile(x, y);
-
-            // Unknown tile type character
-            default:
-                throw new NotSupportedException(string.Format(Resources.ErrorUnsupportedTileType, tileType, x, y));
-        }
+            'P' => LoadStartTile(x, y),
+            _ => throw new NotSupportedException(string.Format(Resources.ErrorUnsupportedTileType, tileType, x, y))
+        };
     }
 
     /// <summary>
@@ -405,6 +375,7 @@ internal class Level : IDisposable
     /// <param name="variationCount">
     ///     The number of variations in this group.
     /// </param>
+    /// <param name="collision"></param>
     private Tile LoadVarietyTile(string baseName, int variationCount, TileCollision collision)
     {
         var index = random.Next(variationCount);
@@ -467,7 +438,7 @@ internal class Level : IDisposable
 
     /// <summary>
     ///     Gets the collision mode of the tile at a particular location.
-    ///     This method handles tiles outside of the levels boundaries by making it
+    ///     This method handles tiles outside the levels boundaries by making it
     ///     impossible to escape past the left or right edges, but allowing things
     ///     to jump beyond the top of the level and fall off the bottom.
     /// </summary>
@@ -504,11 +475,7 @@ internal class Level : IDisposable
     /// <param name="inputState">Provides a snapshot of input states.</param>
     /// <param name="displayOrientation">Provides the current display orientation.</param>
     /// <param name="readyToPlay">Indicates whether the level is ready to be played.</param>
-    public void Update(
-        GameTime gameTime,
-        InputState inputState,
-        DisplayOrientation displayOrientation,
-        bool readyToPlay = true)
+    public void Update(GameTime gameTime, InputState inputState, DisplayOrientation displayOrientation, bool readyToPlay = true)
     {
         if (gameTime == null)
         {
@@ -523,8 +490,7 @@ internal class Level : IDisposable
         this.readyToPlay = readyToPlay;
         ParticleManager.Update(gameTime);
 
-        if (ReachedExit
-            && !particlesExploding)
+        if (ReachedExit && !particlesExploding)
         {
             ParticleManager.Position = Player.Position;
             ParticleManager.Emit(100, SettingsScreen.CurrentParticleEffect);
@@ -591,10 +557,8 @@ internal class Level : IDisposable
 
                 // The player has reached the exit if they are standing on the ground and
                 // his bounding rectangle contains the center of the exit tile. They can only
-                // exit when they have collected all of the gems.
-                if (Player.IsAlive &&
-                    Player.IsOnGround &&
-                    Player.BoundingRectangle.Contains(Exit))
+                // exit when they have collected all the gems.
+                if (Player.IsAlive && Player.IsOnGround && Player.BoundingRectangle.Contains(Exit))
                 {
                     OnExitReached();
                 }
@@ -657,18 +621,20 @@ internal class Level : IDisposable
         {
             enemy.Update(gameTime);
 
-            if (enemy.IsAlive && enemy.BoundingRectangle.Intersects(Player.BoundingRectangle))
+            if (!enemy.IsAlive || !enemy.BoundingRectangle.Intersects(Player.BoundingRectangle))
             {
-                // Touching an enemy while having the power-up kills the enemy
-                if (Player.IsPoweredUp)
-                {
-                    OnEnemyKilled(enemy, Player);
-                }
-                // Touching an enemy instantly kills the player
-                else
-                {
-                    OnPlayerKilled(enemy);
-                }
+                continue;
+            }
+
+            // Touching an enemy while having the power-up kills the enemy
+            if (Player.IsPoweredUp)
+            {
+                OnEnemyKilled(enemy, Player);
+            }
+            // Touching an enemy instantly kills the player
+            else
+            {
+                OnPlayerKilled(enemy);
             }
         }
     }
@@ -759,21 +725,13 @@ internal class Level : IDisposable
         var cameraRight = cameraPosition + screenManager.BaseScreenSize.X;
 
         // Draw visible gems.
-        foreach (var gem in Gems)
-            if (IsInView(gem.Position.X, cameraPosition, cameraRight))
-            {
-                gem.Draw(gameTime, spriteBatch);
-            }
+        foreach (var gem in Gems.Where(gem => IsInView(gem.Position.X, cameraPosition, cameraRight))) gem.Draw(gameTime, spriteBatch);
 
         // Draw the player.
         Player.Draw(gameTime, spriteBatch);
 
         // Draw visible enemies.
-        foreach (var enemy in enemies)
-            if (IsInView(enemy.Position.X, cameraPosition, cameraRight))
-            {
-                enemy.Draw(gameTime, spriteBatch);
-            }
+        foreach (var enemy in enemies.Where(enemy => IsInView(enemy.Position.X, cameraPosition, cameraRight))) enemy.Draw(gameTime, spriteBatch);
 
         spriteBatch.End();
 
@@ -803,8 +761,7 @@ internal class Level : IDisposable
     /// <returns>True if the position is within the camera's view, otherwise false.</returns>
     private bool IsInView(float positionX, float cameraLeft, float cameraRight)
     {
-        return positionX >= cameraLeft - Tile.Width
-               && positionX <= cameraRight + Tile.Width;
+        return positionX >= cameraLeft - Tile.Width && positionX <= cameraRight + Tile.Width;
     }
 
     /// <summary>
@@ -828,13 +785,15 @@ internal class Level : IDisposable
         {
             // If the tile has a texture, draw it at its calculated screen position.
             var texture = tiles[x, y].Texture;
-            if (texture != null)
+            if (texture == null)
             {
-                position.X = x * Tile.Size.X;
-                position.Y = y * Tile.Size.Y;
-
-                spriteBatch.Draw(texture, position, Color.White);
+                continue;
             }
+
+            position.X = x * Tile.Size.X;
+            position.Y = y * Tile.Size.Y;
+
+            spriteBatch.Draw(texture, position, Color.White);
         }
     }
 
@@ -902,10 +861,7 @@ internal class Level : IDisposable
         }
 
         // Draw the backpack in the center-top of the screen.
-        backpackPosition = new Vector2(
-            (screenManager.BaseScreenSize.X - backpack.Width) / 2,
-            20
-        );
+        backpackPosition = new Vector2((screenManager.BaseScreenSize.X - backpack.Width) / 2, 20);
 
         spriteBatch.Draw(backpack, backpackPosition, Color.White);
     }
